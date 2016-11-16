@@ -21,14 +21,6 @@ if [[ $# -eq 0 ]]; then
 fi
 
 BIN=$( cd "$( dirname "$0" )" && pwd )
-chmod +x *.pl
-
-echo "----------"
-echo "BIN \"$BIN\""
-echo "Contents of $BIN"
-ls -lh $BIN
-echo "----------"
-
 QUERY_DIR=""
 OUT_DIR=$BIN
 
@@ -62,26 +54,6 @@ if [[ ! -d $OUT_DIR ]]; then
   mkdir -p "$OUT_DIR"
 fi
 
-#
-# Convert BAM files to FASTA if necessary
-#
-BAM_FILES=$(mktemp)
-find "$QUERY_DIR" -name \*.bam > "$BAM_FILES"
-NUM_BAM=$(lc "$BAM_FILES")
-
-if [[ $NUM_BAM -gt 0 ]]; then
-  while read BAM_FILE; do
-    BASENAME=$(basename $BAM_FILE '.bam')
-    FASTA="$QUERY_DIR/${BASENAME}.fa"
-
-    if [[ ! -s $FASTA ]]; then
-      echo "Converting BAM_FILE \"$BASENAME\""
-      samtools fasta -0 "$FASTA" "$BAM_FILE"
-    fi
-  done < $BAM_FILES
-fi
-rm "$BAM_FILES"
-
 DIST_DIR="$OUT_DIR/dist"
 QUERY_SKETCH_DIR="$OUT_DIR/sketches"
 REPORT_DIR="$OUT_DIR/reports"
@@ -111,7 +83,7 @@ fi
 ALL_QUERY="$OUT_DIR/all-$(basename $QUERY_DIR)"
 if [[ ! -s ${ALL_QUERY}.msh ]]; then
   FILES=$(mktemp)
-  find "$QUERY_DIR" -type f -not -name \*.bam > "$FILES"
+  find "$QUERY_DIR" -type f > "$FILES"
   NUM_FILES=$(lc "$FILES")
 
   if [[ $NUM_FILES -lt 1 ]]; then
@@ -162,17 +134,10 @@ fi
 ALL_REF=${ALL_REF}.msh
 
 echo "DIST $(basename $ALL_QUERY) $(basename $ALL_REF)"
-$MASH dist -t "$ALL_QUERY" "$ALL_REF" > "${DIST_DIR}/${GENOME_DIR}.txt"
+DISTANCE_MATRIX="${DIST_DIR}/dist.txt"
+$MASH dist -t "$ALL_QUERY" "$ALL_REF" > $DISTANCE_MATRIX
 
-#echo "Fixing dist output \"$DIST_DIR\""
-#./fix-dist.pl ${DIST_DIR}/*.txt
-#
-#echo "Contents of \"$DIST_DIR\""
-#ls -l "$DIST_DIR"
+echo "Fixing dist output \"$DIST_DIR\""
+./process-dist.pl6 --dist-file=$DISTANCE_MATRIX
 
-#echo "Creating reports"
-#./report-species.pl -o "$REPORT_DIR/strains" $DIST_DIR/*.fixed
-#./report-species.pl -s -o "$REPORT_DIR/species" $DIST_DIR/*.fixed
-#./report-species.pl -g -o "$REPORT_DIR/genus" $DIST_DIR/*.fixed
-
-echo "Done, look in REPORT_DIR \"$REPORT_DIR\""
+echo "Done."

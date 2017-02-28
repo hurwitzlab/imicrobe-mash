@@ -138,6 +138,6 @@ DISTANCE_MATRIX="${DIST_DIR}/dist.txt"
 $MASH dist -t "$ALL_QUERY" "$ALL_REF" > $DISTANCE_MATRIX
 
 echo "Fixing dist output \"$DIST_DIR\""
-./process-dist.pl6 --dist-file=$DISTANCE_MATRIX
+./process-dist.pl6 --dist-file=$DISTANCE_MATRIX --out-dir=$OUT_DIR
 
 echo "Done."

@@ -15,9 +15,10 @@ sub MAIN (
     }
 
     my $basename = $dist-file.IO.basename;
-    my $in  = open $dist-file, :r;
-    my $out = open $*SPEC.catfile(
-                $out-dir || $dist-file.IO.dirname, $basename ~ '.fixed'), :w;
+    my $in       = open $dist-file, :r;
+    my $out-file = $*SPEC.catfile(
+                   $out-dir || $dist-file.IO.dirname, $basename ~ '.fixed');
+    my $out = open $out-file, :w;
 
     for 1..* Z $in.lines -> ($i, $line) {
         my @flds = $line.split(/\t/);
@@ -30,7 +31,6 @@ sub MAIN (
         }
         else {
             my $file = remove_suffix(@flds.shift);
-            dd @flds;
             next if all(@flds) == 1;
             @flds[0] = %alias{ $file } || $file;
         }
@@ -40,6 +40,8 @@ sub MAIN (
 
     $in.close;
     $out.close;
+
+    put "Done, see '$out-file'";
 }
 
 sub remove_suffix($file) {

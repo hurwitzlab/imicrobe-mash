@@ -1,7 +1,7 @@
 SINGULARITY = /usr/local/bin/singularity
 IMG_NAME = imicrobe-mash-0.0.1.img
 DEF_NAME = image.def
-SIZE = 1536
+SIZE = 1024
 
 run:
 	sudo $(SINGULARITY) run $(IMG_NAME)
